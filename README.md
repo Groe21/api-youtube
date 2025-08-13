@@ -5,52 +5,59 @@ Este proyecto es una mini aplicación web construida con Flask que permite a los
 ## Estructura del Proyecto
 
 ```
-mini-flask-youtube-downloader
+api-youtube
 ├── src
-│   ├── app.py               # Punto de entrada de la aplicación Flask
-│   ├── routes
-│   │   └── __init__.py      # Definición de las rutas de la aplicación
-│   └── utils
-│       └── downloader.py     # Funciones para descargar música de YouTube
-├── requirements.txt          # Dependencias del proyecto
-└── README.md                 # Documentación del proyecto
+│   ├── app.py                 # Punto de entrada de la aplicación Flask
+│   ├── downloads/             # Carpeta donde se guardan los MP3 descargados
+│   ├── routes/
+│   │   └── __init__.py        # Definición de las rutas de la aplicación
+│   ├── static/
+│   │   └── style.css          # Estilos personalizados
+│   ├── templates/
+│   │   └── index.html         # Plantilla principal de la app
+│   └── utils/
+│       └── downloader.py      # Funciones para descargar música de YouTube
+├── requirements.txt           # Dependencias del proyecto
+└── README.md                  # Documentación del proyecto
 ```
 
 ## Requisitos
 
-Asegúrate de tener Python instalado en tu sistema. Este proyecto utiliza las siguientes dependencias:
+- Python 3.x
+- pip
+- ffmpeg (para conversión a MP3)
 
-- Flask
-- [Biblioteca para descargar videos de YouTube] (especificar la biblioteca en requirements.txt)
+## Instalación en Ubuntu (paso a paso)
 
-## Instalación
-
-1. Clona el repositorio:
-   ```
-   git clone <URL_DEL_REPOSITORIO>
-   cd mini-flask-youtube-downloader
-   ```
-
-2. Crea un entorno virtual (opcional pero recomendado):
-   ```
-   python -m venv venv
-   source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+1. **Actualiza los paquetes e instala ffmpeg:**
+   ```bash
+   sudo apt update
+   sudo apt install ffmpeg
    ```
 
-3. Instala las dependencias:
+2. **Clona el repositorio:**
+   ```bash
+   git clone https://github.com/Groe21/api-youtube.git
+   cd api-youtube
    ```
+
+3. **Crea un entorno virtual (opcional pero recomendado):**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+4. **Instala las dependencias de Python:**
+   ```bash
    pip install -r requirements.txt
    ```
 
-## Ejecución
+5. **Ejecuta la aplicación:**
+   ```bash
+   python src/app.py
+   ```
 
-Para ejecutar la aplicación, utiliza el siguiente comando:
-
-```
-python src/app.py
-```
-
-La aplicación estará disponible en `http://127.0.0.1:5000`.
+La aplicación estará disponible en [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
 ## Uso
 
