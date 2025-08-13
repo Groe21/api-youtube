@@ -45,7 +45,12 @@
                                         const alertDiv = document.getElementById("single-alert");
                                         function showNext() {
                                             if (i < msgs.length) {
-                                                alertDiv.textContent = msgs[i];
+                                                // Si es el último mensaje y contiene "Descarga completada", renderiza como HTML
+                                                if (i === msgs.length - 1 && msgs[i].includes("Descarga completada")) {
+                                                    alertDiv.innerHTML = `{{ msgs[-1]|safe }}`;
+                                                } else {
+                                                    alertDiv.textContent = msgs[i];
+                                                }
                                                 alertDiv.style.display = "block";
                                                 if (msgs[i].includes("Procediendo con la descarga")) {
                                                     document.getElementById("progress-bar").style.display = "block";

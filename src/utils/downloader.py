@@ -1,4 +1,5 @@
 import yt_dlp
+import os
 
 def download_youtube_audio(url, output_path='downloads'):
     try:
@@ -14,9 +15,10 @@ def download_youtube_audio(url, output_path='downloads'):
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            return f"Descarga completada: {info['title']}.mp3"
+            filename = f"{info['title']}.mp3"
+            return filename
     except Exception as e:
-        return f"Ocurrió un error: {str(e)}"
+        return None
 
 def download_music(url):
     return download_youtube_audio(url)
