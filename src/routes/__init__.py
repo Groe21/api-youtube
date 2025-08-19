@@ -49,3 +49,10 @@ def download():
 def serve_download(filename):
     downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
     return send_from_directory(downloads_dir, filename, as_attachment=True)
+
+@routes.route('/musicas')
+def musicas():
+    import os
+    downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
+    archivos = [f for f in os.listdir(downloads_dir) if f.endswith('.mp3')]
+    return render_template('musicas.html', musicas=archivos)

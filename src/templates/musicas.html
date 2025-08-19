@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Músicas descargadas{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Músicas descargadas</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre del archivo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for musica in musicas %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ musica }}</td>
+                                <td>
+                                    <a href="{{ url_for('routes.serve_download', filename=musica) }}" class="btn btn-success btn-sm" download>Descargar</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center">No hay músicas descargadas.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
