@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from routes import routes
+from src.routes import routes
 
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')
