@@ -65,3 +65,10 @@ def eliminar_musica(filename):
     if os.path.exists(file_path):
         os.remove(file_path)
     return redirect(request.referrer or url_for('routes.musicas'))
+
+@routes.route('/')
+def index():
+    import os
+    downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
+    archivos = [f for f in os.listdir(downloads_dir) if f.endswith('.mp3')]
+    return render_template('index.html', musicas=archivos)

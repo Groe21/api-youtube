@@ -60,7 +60,6 @@
                     {% if message and "Descarga completada" in message %}
                     <button id="reset-btn" class="btn btn-success w-100 mt-3" onclick="window.location.href='/'">Descargar otra</button>
                     {% endif %}
-                    <!-- ...formulario de descarga... -->
 
                     <h4 class="mt-5 mb-3 text-center">Músicas descargadas</h4>
                     <div class="table-responsive">
@@ -92,10 +91,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-                    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-                    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-                    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+                    {% if musicas|length > 0 %}
                     <script>
                         $(document).ready(function () {
                             $('#musicas-table').DataTable({
@@ -114,6 +110,7 @@
                             });
                         });
                     </script>
+                    {% endif %}
                 </div>
             </div>
         </div>
