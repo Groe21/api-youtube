@@ -30,6 +30,9 @@ def download_youtube_audio(url):
                 return None
             filename = f"{info['title']}.mp3"
 
+            print(f"Guardando en: {output_path}")
+            print(f"Archivo final: {os.path.join(output_path, filename)}")
+
             # Forzar permisos del archivo también
             final_file = os.path.join(output_path, filename)
             if os.path.exists(final_file):
@@ -42,4 +45,4 @@ def download_youtube_audio(url):
         return None
 
 def download_music(url):
-    return download_youtube_audio(url)
+    return
