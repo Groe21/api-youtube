@@ -33,3 +33,4 @@ if __name__ == '__main__':
 from app import create_app  # asegúrate de importar tu create_app
 
 app = create_app()
+
