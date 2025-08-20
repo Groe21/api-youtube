@@ -4,13 +4,14 @@ from flask import current_app
 
 def download_youtube_audio(url):
     try:
-        # Usamos la ruta absoluta de la app
         output_path = current_app.config.get("DOWNLOADS_PATH", "downloads")
-        os.makedirs(output_path, exist_ok=True)  # por si no existe
+        os.makedirs(output_path, exist_ok=True)
 
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': f'{output_path}/%(title)s.%(ext)s',
+            'ignoreerrors': True,  # Ignora errores de streams no descargables
+            'allow_unplayable_formats': True,  # Permite streams que podrían no reproducirse directamente
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
