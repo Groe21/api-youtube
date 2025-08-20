@@ -1,6 +1,8 @@
+import sys
 import os
-from flask import Flask, render_template
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from routes import routes
+from flask import Flask, render_template
 
 def create_app():
     # Crear la app Flask
