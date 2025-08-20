@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="card-title text-center mb-4">Músicas descargadas</h3>
-                    <table class="table table-striped">
+                    <table id="musicas-table" class="table table-striped">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -22,6 +22,9 @@
                                 <td>{{ musica }}</td>
                                 <td>
                                     <a href="{{ url_for('routes.serve_download', filename=musica) }}" class="btn btn-success btn-sm" download>Descargar</a>
+                                    <form action="{{ url_for('routes.eliminar_musica', filename=musica) }}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar esta música?');">Eliminar</button>
+                                    </form>
                                 </td>
                             </tr>
                             {% else %}
@@ -36,4 +39,26 @@
         </div>
     </div>
 </div>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#musicas-table').DataTable({
+            "pageLength": 5,
+            "lengthChange": false,
+            "language": {
+                "search": "Buscar:",
+                "paginate": {
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                },
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ músicas",
+                "infoEmpty": "No hay músicas para mostrar",
+                "zeroRecords": "No se encontraron resultados"
+            }
+        });
+    });
+</script>
 {% endblock %}

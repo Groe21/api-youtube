@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, send_from_directory
+from flask import Blueprint, request, render_template, send_from_directory, redirect, url_for
 from utils.downloader import download_music
 import os
 
@@ -56,3 +56,12 @@ def musicas():
     downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
     archivos = [f for f in os.listdir(downloads_dir) if f.endswith('.mp3')]
     return render_template('musicas.html', musicas=archivos)
+
+@routes.route('/eliminar/<path:filename>', methods=['POST'])
+def eliminar_musica(filename):
+    import os
+    downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
+    file_path = os.path.join(downloads_dir, filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    return redirect(request.referrer or url_for('routes.musicas'))
