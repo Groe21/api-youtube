@@ -4,11 +4,11 @@ from flask import current_app
 
 def download_youtube_audio(url):
     try:
-        # Ruta de descargas (local o servidor)
+        # Ruta de descargas configurable o por defecto
         output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "downloads"))
         os.makedirs(output_path, exist_ok=True)
 
-        # Permisos abiertos para todos en la carpeta
+        # Permisos de carpeta tipo Nextcloud (lectura/escritura/ejecución para todos)
         os.chmod(output_path, 0o777)
 
         ydl_opts = {
@@ -32,7 +32,7 @@ def download_youtube_audio(url):
             filename = f"{info['title']}.mp3"
             final_file = os.path.join(output_path, filename)
 
-            # Asegurar permisos del archivo final
+            # Verificación de archivo y permisos
             if os.path.exists(final_file):
                 os.chmod(final_file, 0o666)
 
