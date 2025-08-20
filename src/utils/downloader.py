@@ -4,12 +4,19 @@ from flask import current_app
 
 def download_youtube_audio(url):
     try:
-        # Ruta de descargas configurable o por defecto
-        output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "downloads"))
+        # Ruta de descargas absoluta
+        output_path = os.path.abspath(current_app.config.get(
+            "DOWNLOADS_PATH", "/var/www/api-youtube/downloads"
+        ))
         os.makedirs(output_path, exist_ok=True)
 
-        # Permisos de carpeta tipo Nextcloud (lectura/escritura/ejecución para todos)
+        # Verificación de permisos tipo Nextcloud (lectura/escritura/ejecución para todos)
         os.chmod(output_path, 0o777)
+
+        # Debug: usuario actual y directorio de trabajo
+        print("Guardando en:", output_path)
+        print("Usuario actual UID:", os.getuid())
+        print("Directorio actual:", os.getcwd())
 
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -27,6 +34,7 @@ def download_youtube_audio(url):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if not info:
+                print("No se pudo obtener información del video.")
                 return None
 
             filename = f"{info['title']}.mp3"
@@ -35,8 +43,10 @@ def download_youtube_audio(url):
             # Verificación de archivo y permisos
             if os.path.exists(final_file):
                 os.chmod(final_file, 0o666)
+                print(f"Archivo descargado y permisos ajustados: {final_file}")
+            else:
+                print("El archivo no se creó correctamente.")
 
-            print(f"Guardado en: {final_file}")
             return filename
 
     except Exception as e:
