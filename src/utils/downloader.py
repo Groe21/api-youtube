@@ -17,7 +17,7 @@ def download_youtube_audio(url):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'quiet': True,
+            'quiet': False,  # Cambia a False para ver más logs
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
@@ -26,6 +26,7 @@ def download_youtube_audio(url):
             filename = f"{info['title']}.mp3"
             print(f"Guardando en: {output_path}")
             print(f"Archivo final: {os.path.join(output_path, filename)}")
+            print("Archivos en carpeta:", os.listdir(output_path))
             return filename
     except Exception as e:
         print(f"Error al descargar: {e}")
