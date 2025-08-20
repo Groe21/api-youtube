@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, send_from_directory, redirect, url_for
+from flask import Blueprint, request, render_template, send_from_directory, redirect, url_for, current_app
 from utils.downloader import download_music
 import os
 
@@ -53,7 +53,7 @@ def serve_download(filename):
 @routes.route('/musicas')
 def musicas():
     import os
-    downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
+    downloads_dir = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "/var/www/api-youtube/downloads"))
     archivos = [f for f in os.listdir(downloads_dir) if f.endswith('.mp3')]
     return render_template('musicas.html', musicas=archivos)
 
@@ -69,6 +69,6 @@ def eliminar_musica(filename):
 @routes.route('/')
 def index():
     import os
-    downloads_dir = os.path.join(os.path.dirname(__file__), '..', 'downloads')
+    downloads_dir = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "/var/www/api-youtube/downloads"))
     archivos = [f for f in os.listdir(downloads_dir) if f.endswith('.mp3')]
     return render_template('index.html', musicas=archivos)
