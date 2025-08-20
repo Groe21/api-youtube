@@ -4,11 +4,11 @@ from flask import current_app
 
 def download_youtube_audio(url):
     try:
-        # Obtiene la ruta absoluta para descargas
+        # Ruta de descargas (local o servidor)
         output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "downloads"))
         os.makedirs(output_path, exist_ok=True)
 
-        # Forzar permisos estilo Nextcloud (lectura/escritura para todos)
+        # Permisos abiertos para todos en la carpeta
         os.chmod(output_path, 0o777)
 
         ydl_opts = {
@@ -28,16 +28,15 @@ def download_youtube_audio(url):
             info = ydl.extract_info(url, download=True)
             if not info:
                 return None
+
             filename = f"{info['title']}.mp3"
-
-            print(f"Guardando en: {output_path}")
-            print(f"Archivo final: {os.path.join(output_path, filename)}")
-
-            # Forzar permisos del archivo también
             final_file = os.path.join(output_path, filename)
+
+            # Asegurar permisos del archivo final
             if os.path.exists(final_file):
                 os.chmod(final_file, 0o666)
 
+            print(f"Guardado en: {final_file}")
             return filename
 
     except Exception as e:
@@ -45,4 +44,4 @@ def download_youtube_audio(url):
         return None
 
 def download_music(url):
-    return
+    return download_youtube_audio(url)
