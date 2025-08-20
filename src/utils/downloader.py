@@ -4,7 +4,7 @@ from flask import current_app
 
 def download_youtube_audio(url):
     try:
-        output_path = current_app.config.get("DOWNLOADS_PATH", "downloads")
+        output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH"))
         os.makedirs(output_path, exist_ok=True)
 
         ydl_opts = {
