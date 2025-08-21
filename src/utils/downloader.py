@@ -3,57 +3,50 @@ import os
 import subprocess
 from flask import current_app
 
-def convert_webm_to_mp3(webm_path, mp3_path):
-    try:
-        # Convierte usando ffmpeg
-        subprocess.run([
-            "ffmpeg", "-y", "-i", webm_path, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
-        ], check=True)
-        return True
-    except Exception as e:
-        print(f"Error al convertir a mp3: {e}")
-        return False
-
-def download_youtube_audio(url):
+def download_and_convert_to_mp3(url):
     try:
         output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "/var/www/api-youtube/downloads"))
         os.makedirs(output_path, exist_ok=True)
 
+        # Descarga el mejor audio posible (no importa el formato)
         ydl_opts = {
             'format': 'bestaudio/best',
-            'outtmpl': f'{output_path}/%(title)s.%(ext)s',
+            'outtmpl': f'{output_path}/temp_audio.%(ext)s',
             'ignoreerrors': True,
-            'allow_unplayable_formats': True,
-            'quiet': False,
+            'quiet': True,
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if not info:
                 return None
-            # Detecta el archivo descargado
-            base_title = info['title']
-            webm_file = None
-            for ext in ['webm', 'm4a', 'mp4']:
-                candidate = f"{base_title}.{ext}"
-                candidate_path = os.path.join(output_path, candidate)
-                if os.path.exists(candidate_path):
-                    webm_file = candidate_path
+
+            # Busca el archivo descargado (temp_audio.*)
+            temp_file = None
+            for f in os.listdir(output_path):
+                if f.startswith("temp_audio."):
+                    temp_file = os.path.join(output_path, f)
                     break
-            if webm_file:
-                mp3_file = os.path.join(output_path, f"{base_title}.mp3")
-                print(f"Convirtiendo {webm_file} a {mp3_file} ...")
-                if convert_webm_to_mp3(webm_file, mp3_file):
-                    print(f"Convertido a mp3: {mp3_file}")
-                    return f"{base_title}.mp3"
-                else:
-                    print("No se pudo convertir a mp3.")
-                    return None
-            else:
-                print("No se encontró archivo descargado para convertir.")
+
+            if not temp_file:
+                print("No se encontró el archivo temporal descargado.")
                 return None
+
+            # Convierte a mp3 con el título del video
+            mp3_filename = f"{info['title']}.mp3"
+            mp3_path = os.path.join(output_path, mp3_filename)
+            print(f"Convirtiendo {temp_file} a {mp3_path} ...")
+            subprocess.run([
+                "ffmpeg", "-y", "-i", temp_file, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
+            ], check=True)
+
+            # Borra el archivo temporal
+            os.remove(temp_file)
+            print(f"Convertido a mp3: {mp3_path}")
+            return mp3_filename
+
     except Exception as e:
-        print(f"Error al descargar: {e}")
+        print(f"Error en la descarga/conversión: {e}")
         return None
 
 def download_music(url):
-    return download_youtube_audio(url)
+    return download_and_convert_to_mp3(url)
