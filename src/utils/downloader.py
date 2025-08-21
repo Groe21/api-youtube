@@ -1,6 +1,18 @@
 import yt_dlp
 import os
+import subprocess
 from flask import current_app
+
+def convert_webm_to_mp3(webm_path, mp3_path):
+    try:
+        # Convierte usando ffmpeg
+        subprocess.run([
+            "ffmpeg", "-y", "-i", webm_path, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
+        ], check=True)
+        return True
+    except Exception as e:
+        print(f"Error al convertir a mp3: {e}")
+        return False
 
 def download_youtube_audio(url):
     try:
@@ -12,22 +24,32 @@ def download_youtube_audio(url):
             'outtmpl': f'{output_path}/%(title)s.%(ext)s',
             'ignoreerrors': True,
             'allow_unplayable_formats': True,
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'quiet': False,  # Cambia a False para ver más logs
+            'quiet': False,
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if not info:
                 return None
-            filename = f"{info['title']}.mp3"
-            print(f"Guardando en: {output_path}")
-            print(f"Archivo final: {os.path.join(output_path, filename)}")
-            print("Archivos en carpeta:", os.listdir(output_path))
-            return filename
+            # Detecta el archivo descargado
+            base_title = info['title']
+            webm_file = None
+            for ext in ['webm', 'm4a', 'mp4']:
+                candidate = f"{base_title}.{ext}"
+                candidate_path = os.path.join(output_path, candidate)
+                if os.path.exists(candidate_path):
+                    webm_file = candidate_path
+                    break
+            if webm_file:
+                mp3_file = os.path.join(output_path, f"{base_title}.mp3")
+                if convert_webm_to_mp3(webm_file, mp3_file):
+                    print(f"Convertido a mp3: {mp3_file}")
+                    return f"{base_title}.mp3"
+                else:
+                    print("No se pudo convertir a mp3.")
+                    return None
+            else:
+                print("No se encontró archivo descargado para convertir.")
+                return None
     except Exception as e:
         print(f"Error al descargar: {e}")
         return None
