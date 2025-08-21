@@ -8,7 +8,6 @@ def download_and_convert_to_mp3(url):
         output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "/var/www/api-youtube/downloads"))
         os.makedirs(output_path, exist_ok=True)
 
-        # Descarga el mejor audio posible (no importa el formato)
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': f'{output_path}/temp_audio.%(ext)s',
@@ -21,7 +20,6 @@ def download_and_convert_to_mp3(url):
                 print("No se pudo extraer info del video.")
                 return None
 
-            # Busca el archivo descargado (temp_audio.*)
             temp_file = None
             for f in os.listdir(output_path):
                 if f.startswith("temp_audio."):
@@ -32,7 +30,6 @@ def download_and_convert_to_mp3(url):
                 print("No se encontró el archivo temporal descargado.")
                 return None
 
-            # Convierte a mp3 con el título del video
             mp3_filename = f"{info['title']}.mp3"
             mp3_path = os.path.join(output_path, mp3_filename)
             print(f"Convirtiendo {temp_file} a {mp3_path} ...")
@@ -40,14 +37,15 @@ def download_and_convert_to_mp3(url):
                 "ffmpeg", "-y", "-i", temp_file, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
             ], capture_output=True, text=True)
 
-            print("STDOUT ffmpeg:", result.stdout)
-            print("STDERR ffmpeg:", result.stderr)
+            # Guarda el log de ffmpeg
+            with open(os.path.join(output_path, "ffmpeg_last.log"), "w") as logf:
+                logf.write("STDOUT ffmpeg:\n" + result.stdout)
+                logf.write("\nSTDERR ffmpeg:\n" + result.stderr)
 
             if result.returncode != 0:
                 print(f"Error en ffmpeg: {result.stderr}")
                 return None
 
-            # Borra el archivo temporal
             os.remove(temp_file)
             print(f"Convertido a mp3: {mp3_path}")
             return mp3_filename
