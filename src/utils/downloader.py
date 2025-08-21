@@ -41,6 +41,7 @@ def download_youtube_audio(url):
                     break
             if webm_file:
                 mp3_file = os.path.join(output_path, f"{base_title}.mp3")
+                print(f"Convirtiendo {webm_file} a {mp3_file} ...")
                 if convert_webm_to_mp3(webm_file, mp3_file):
                     print(f"Convertido a mp3: {mp3_file}")
                     return f"{base_title}.mp3"
