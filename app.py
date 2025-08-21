@@ -8,11 +8,19 @@ DOWNLOADS_PATH = os.path.join(os.path.dirname(__file__), "downloads")
 @app.route('/', methods=['GET', 'POST'])
 def index():
     message = None
+    converted = False
+    url = ""
     if request.method == 'POST':
         url = request.form.get('url')
+        if url and "music.youtube.com" in url:
+            url = url.replace("music.youtube.com", "www.youtube.com")
+            converted = True
         filename = download_and_convert_to_mp3(url, DOWNLOADS_PATH)
         if filename:
-            message = f"Descarga completada: {filename}"
+            if converted:
+                message = f"Enlace de YouTube Music convertido a YouTube normal. Descarga completada: {filename}"
+            else:
+                message = f"Descarga completada: {filename}"
         else:
             message = "Ocurrió un error al descargar."
     musicas = [f for f in os.listdir(DOWNLOADS_PATH) if f.endswith('.mp3')]
