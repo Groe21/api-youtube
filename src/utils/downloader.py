@@ -18,6 +18,7 @@ def download_and_convert_to_mp3(url):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if not info:
+                print("No se pudo extraer info del video.")
                 return None
 
             # Busca el archivo descargado (temp_audio.*)
@@ -35,9 +36,16 @@ def download_and_convert_to_mp3(url):
             mp3_filename = f"{info['title']}.mp3"
             mp3_path = os.path.join(output_path, mp3_filename)
             print(f"Convirtiendo {temp_file} a {mp3_path} ...")
-            subprocess.run([
+            result = subprocess.run([
                 "ffmpeg", "-y", "-i", temp_file, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
-            ], check=True)
+            ], capture_output=True, text=True)
+
+            print("STDOUT ffmpeg:", result.stdout)
+            print("STDERR ffmpeg:", result.stderr)
+
+            if result.returncode != 0:
+                print(f"Error en ffmpeg: {result.stderr}")
+                return None
 
             # Borra el archivo temporal
             os.remove(temp_file)
