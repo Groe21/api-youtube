@@ -4,7 +4,7 @@ from flask import current_app
 
 def download_music(url):
     try:
-        output_path = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "/var/www/api-youtube/downloads"))
+        output_path = "/var/www/api-youtube/src/downloads"  # Ruta absoluta correcta
         os.makedirs(output_path, exist_ok=True)
 
         ydl_opts = {
@@ -15,8 +15,9 @@ def download_music(url):
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'ignoreerrors': True,
-            'quiet': True,
+            'ignoreerrors': False,
+            'quiet': False,
+            'verbose': True,
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -25,13 +26,12 @@ def download_music(url):
                 print("No se pudo extraer info del video.")
                 return None
 
-            # Busca el archivo MP3 generado
             base_title = info['title']
             mp3_file = f"{base_title}.mp3"
             mp3_path = os.path.join(output_path, mp3_file)
 
             if os.path.exists(mp3_path):
-                print(f"Descarga completada: {mp3_file}")
+                print(f"Descarga completada: {mp3_path}")
                 return mp3_file
             else:
                 print("No se generó el archivo MP3.")
