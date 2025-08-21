@@ -18,7 +18,7 @@ def download_and_convert_to_mp3(url, output_path):
         mp3_filename = f"{info['title']}.mp3"
         mp3_path = os.path.join(output_path, mp3_filename)
         result = subprocess.run([
-            "ffmpeg", "-y", "-i", temp_file, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
+            "/usr/bin/ffmpeg", "-y", "-i", temp_file, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
         ], capture_output=True, text=True)
         os.remove(temp_file)
         if result.returncode != 0:
