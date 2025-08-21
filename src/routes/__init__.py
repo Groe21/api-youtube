@@ -70,5 +70,5 @@ def eliminar_musica(filename):
 def index():
     import os
     downloads_dir = os.path.abspath(current_app.config.get("DOWNLOADS_PATH", "/var/www/api-youtube/downloads"))
-    archivos = [f for f in os.listdir(downloads_dir) if f.endswith(('.mp3', '.webm', '.mp4'))]
+    archivos = [f for f in os.listdir(downloads_dir) if f.endswith('.mp3')]
     return render_template('index.html', musicas=archivos)
