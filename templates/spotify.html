@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Descargar música de YouTube</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Descargar música de Spotify</h2>
+    <form method="post">
+        <div class="mb-3">
+            <div class="input-group">
+                <input type="text" id="urlInput" name="url" class="form-control" placeholder="URL de YouTube" required>
+                <button type="button" class="btn btn-secondary" id="pasteBtn">Pegar</button>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Descargar MP3</button>
+    </form>
+    {% if message %}
+    <div class="alert alert-info mt-3" style="background: #dff6ff; border: 1px solid #bde3f7;">
+        {{ message }}
+        <button class="btn btn-primary btn-sm float-end" onclick="window.location.href='/'">Descargar otra canción</button>
+    </div>
+    {% endif %}
+    <h4 class="mt-5">Músicas descargadas</h4>
+    <div class="table-responsive">
+        <table id="musicas-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del archivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for musica in musicas %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ musica }}</td>
+                    <td>
+                        <a href="{{ url_for('download_spotify_file', filename=musica) }}" class="btn btn-primary btn-sm" download>Descargar</a>
+                        <form action="{{ url_for('delete_spotify_file', filename=musica) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este archivo?')">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td></td>
+                    <td class="text-center">No hay músicas descargadas.</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+$(document).ready(function () {
+    $("#musicas-table").DataTable({
+        pageLength: 5,
+        language: {
+            search: "Buscar:",
+            paginate: {
+                next: "Siguiente",
+                previous: "Anterior"
+            },
+            info: "Mostrando _START_ a _END_ de _TOTAL_ músicas",
+            infoEmpty: "No hay músicas para mostrar",
+            zeroRecords: "No se encontraron resultados"
+        }
+    });
+});
+
+document.getElementById('pasteBtn').addEventListener('click', async function() {
+    try {
+        // Solicita permiso explícito al navegador
+        const permission = await navigator.permissions.query({ name: "clipboard-read" });
+        if (permission.state === "denied") {
+            alert("Permiso denegado para acceder al portapapeles.");
+            return;
+        }
+        document.getElementById('urlInput').focus();
+        const text = await navigator.clipboard.readText();
+        document.getElementById('urlInput').value = text;
+    } catch (err) {
+        alert('No se pudo acceder al portapapeles. Permite el acceso en la configuración del navegador.');
+    }
+});
+</script>
+</body>
+</html>

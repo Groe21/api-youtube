@@ -1,26 +1,29 @@
-import yt_dlp
 import os
-import subprocess
+import yt_dlp
 
 def download_and_convert_to_mp3(url, output_path):
     os.makedirs(output_path, exist_ok=True)
-    temp_file = os.path.join(output_path, "temp_audio.webm")
+    
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': temp_file,
-        'ignoreerrors': True,
-        'quiet': True,
+        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'cookiesfrombrowser': ('chrome',),  # Usa cookies del navegador
+        'quiet': False,
+        'no_warnings': False,
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        if not info:
-            return None
-        mp3_filename = f"{info['title']}.mp3"
-        mp3_path = os.path.join(output_path, mp3_filename)
-        result = subprocess.run([
-            "/usr/bin/ffmpeg", "-y", "-i", temp_file, "-vn", "-ab", "192k", "-ar", "44100", "-f", "mp3", mp3_path
-        ], capture_output=True, text=True)
-        os.remove(temp_file)
-        if result.returncode != 0:
-            return None
-        return mp3_filename
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+            # Cambia la extensión a .mp3
+            mp3_filename = os.path.splitext(os.path.basename(filename))[0] + '.mp3'
+            return mp3_filename
+    except Exception as e:
+        print(f"Error al descargar: {e}")
+        return None
