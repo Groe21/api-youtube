@@ -715,7 +715,7 @@
         // Variables globales
         const audioPlayer = document.getElementById('audioPlayer');
         let currentSong = null;
-        let playlist = [];
+        let allSongs = [];
         let currentIndex = 0;
         let likes = [];
         let playlists = {};
@@ -741,8 +741,27 @@
         });
 
         // Funciones de reproducción
+        function buildSongList() {
+            // Construir lista completa de canciones desde el DOM
+            allSongs = [];
+            document.querySelectorAll('.song-item').forEach(item => {
+                const genre = item.dataset.genre;
+                const filename = item.dataset.filename;
+                if (genre && filename) {
+                    allSongs.push({ genre, filename });
+                }
+            });
+        }
+
         function playSong(genre, filename) {
+            buildSongList();
+            
             currentSong = { genre, filename };
+            
+            // Encontrar índice de la canción actual
+            currentIndex = allSongs.findIndex(s => s.genre === genre && s.filename === filename);
+            if (currentIndex === -1) currentIndex = 0;
+            
             const songName = filename.replace('.mp3', '');
             
             audioPlayer.src = `/stream/${genre}/${encodeURIComponent(filename)}`;
@@ -774,11 +793,27 @@
         }
 
         function previousSong() {
-            // TODO: Implement previous song logic
+            if (allSongs.length === 0) return;
+            
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = allSongs.length - 1;
+            }
+            
+            const song = allSongs[currentIndex];
+            playSong(song.genre, song.filename);
         }
 
         function nextSong() {
-            // TODO: Implement next song logic
+            if (allSongs.length === 0) return;
+            
+            currentIndex++;
+            if (currentIndex >= allSongs.length) {
+                currentIndex = 0;
+            }
+            
+            const song = allSongs[currentIndex];
+            playSong(song.genre, song.filename);
         }
 
         function seekTo(event) {
@@ -800,6 +835,11 @@
             document.getElementById('progressBar').style.width = percent + '%';
             document.getElementById('currentTime').textContent = formatTime(audioPlayer.currentTime);
             document.getElementById('totalTime').textContent = formatTime(audioPlayer.duration);
+        });
+
+        // Auto-reproducir siguiente canción cuando termine
+        audioPlayer.addEventListener('ended', () => {
+            nextSong();
         });
 
         function formatTime(seconds) {
