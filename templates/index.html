@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Downloader - Dashboard</title>
+    <title>Music Downloader - Descarga por Lotes</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -13,418 +13,251 @@
             --secondary-color: #8b5cf6;
             --success-color: #10b981;
             --danger-color: #ef4444;
-            --dark-bg: #1e293b;
-            --card-bg: #ffffff;
-            --sidebar-bg: #0f172a;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 30px 0;
         }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 260px;
-            background: var(--sidebar-bg);
-            padding: 20px;
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        
+        .container {
+            max-width: 1200px;
         }
-
-        .sidebar.hide {
-            transform: translateX(-100%);
-        }
-
-        .sidebar-header {
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 30px;
-        }
-
-        .sidebar-header h3 {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 10px;
-        }
-
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .sidebar-menu i {
-            margin-right: 12px;
-            font-size: 1.2rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 260px;
-            padding: 30px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.full {
-            margin-left: 0;
-        }
-
-        /* Top Bar */
-        .top-bar {
+        
+        .header-section {
             background: white;
-            padding: 15px 25px;
+            padding: 25px;
             border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
         }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--dark-bg);
+        
+        .header-section h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin: 0;
         }
-
-        /* Cards */
+        
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-            overflow: hidden;
         }
-
+        
         .card-header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             padding: 20px;
             border: none;
+            border-radius: 15px 15px 0 0 !important;
         }
-
-        .card-body {
-            padding: 25px;
-        }
-
-        /* Form Styles */
-        .form-control {
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            padding: 12px 15px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-        }
-
-        .btn {
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            border: none;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            border: none;
-        }
-
-        .btn-info {
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-            border: none;
-        }
-
-        /* Table Styles */
-        .table-container {
+        
+        .genre-section {
             background: white;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        #musicas-table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        #musicas-table thead th {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            font-weight: 600;
-            padding: 15px;
-            border: none;
-        }
-
-        #musicas-table tbody tr {
-            transition: all 0.3s;
-        }
-
-        #musicas-table tbody tr:hover {
-            background: #f8fafc;
-            transform: scale(1.01);
-        }
-
-        /* Alert Styles */
-        .alert {
-            border-radius: 12px;
-            border: none;
-            padding: 15px 20px;
-        }
-
-        .alert-info {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            color: #1e40af;
-        }
-
-        /* Stats Cards */
-        .stats-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-
-        .stats-card i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        
+        .genre-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
         }
-
-        .stats-card h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
+        
+        textarea.form-control {
+            min-height: 200px;
+            font-family: monospace;
+            border-radius: 10px;
         }
-
-        .stats-card p {
-            color: #64748b;
+        
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+        
+        .table {
             margin: 0;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .top-bar {
-                flex-direction: column;
-                gap: 15px;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3><i class="bi bi-music-note-beamed"></i> Music DL</h3>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a href="{{ url_for('index') }}" class="active"><i class="bi bi-youtube"></i> YouTube</a></li>
-            <li><a href="{{ url_for('spotify') }}"><i class="bi bi-spotify"></i> Spotify</a></li>
-            <li><a href="{{ url_for('batch') }}"><i class="bi bi-collection"></i> Descarga por lotes</a></li>
-            <li><a href="#"><i class="bi bi-folder-fill"></i> Mis Descargas</a></li>
-            <li><a href="#"><i class="bi bi-gear-fill"></i> Configuración</a></li>
-        </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <button class="menu-toggle" id="menuToggle">
-                <i class="bi bi-list"></i>
-            </button>
-            <h4 class="mb-0">Descargar música de YouTube</h4>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1><i class="bi bi-music-note-beamed"></i> Music Downloader</h1>
+            <p class="text-muted mb-0">Descarga música de YouTube organizadas por género</p>
         </div>
 
-        <!-- Stats Row -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="stats-card text-center">
-                    <i class="bi bi-download text-primary"></i>
-                    <h3>{{ musicas|length }}</h3>
-                    <p>Canciones descargadas</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stats-card text-center">
-                    <i class="bi bi-music-note-list text-success"></i>
-                    <h3>0</h3>
-                    <p>Playlists</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stats-card text-center">
-                    <i class="bi bi-hdd text-info"></i>
-                    <h3>0 MB</h3>
-                    <p>Espacio usado</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Download Card -->
+        <!-- Download Form -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-cloud-download"></i> Nueva Descarga</h5>
+                <h5 class="mb-0"><i class="bi bi-cloud-download"></i> Descargar múltiples canciones</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="padding: 25px; background: white;">
                 <form method="post">
                     <div class="mb-3">
-                        <label class="form-label">URL de YouTube</label>
+                        <label class="form-label">URLs de YouTube (una por línea)</label>
+                        <textarea name="urls" class="form-control" placeholder="https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Género Musical</label>
                         <div class="input-group">
-                            <input type="text" id="urlInput" name="url" class="form-control" placeholder="Pega aquí el enlace de YouTube" required>
-                            <button type="button" class="btn btn-outline-secondary" id="pasteBtn">
-                                <i class="bi bi-clipboard"></i> Pegar
-                            </button>
+                            <select id="genreSelect" class="form-select" onchange="toggleGenreInput()">
+                                <option value="">-- Selecciona un género existente --</option>
+                                {% for genre in genres_data.keys() %}
+                                <option value="{{ genre }}">{{ genre }} ({{ genres_data[genre]|length }} canciones)</option>
+                                {% endfor %}
+                                <option value="nuevo">➕ Crear nuevo género</option>
+                            </select>
                         </div>
                     </div>
+                    <div class="mb-3" id="newGenreDiv" style="display: none;">
+                        <label class="form-label">Nombre del nuevo género</label>
+                        <input type="text" id="newGenreInput" class="form-control" placeholder="Ej: Rock, Pop, Reggaeton, etc.">
+                    </div>
+                    <input type="hidden" name="genre" id="genreHidden" value="General">
                     <button type="submit" class="btn btn-success w-100">
-                        <i class="bi bi-download"></i> Descargar MP3
+                        <i class="bi bi-download"></i> Descargar Todo
                     </button>
                 </form>
-                <div class="text-center mt-3">
-                    <a href="{{ url_for('spotify') }}" class="btn btn-info">
-                        <i class="bi bi-spotify"></i> Ir a descargas de Spotify
-                    </a>
-                </div>
+                
                 {% if message %}
-                <div class="alert alert-info mt-3">
+                <div class="alert alert-info mt-3" style="border-radius: 12px; padding: 15px 20px;">
                     <i class="bi bi-info-circle"></i> {{ message }}
-                    <button class="btn btn-primary btn-sm float-end" onclick="window.location.href='/'">
-                        <i class="bi bi-arrow-clockwise"></i> Nueva descarga
-                    </button>
+                    
+                    {% if downloaded %}
+                    <div class="mt-2">
+                        <strong>Nuevas descargas:</strong>
+                        <ul class="mb-0">
+                            {% for file in downloaded %}
+                            <li>{{ file }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if skipped %}
+                    <div class="mt-2">
+                        <strong>Ya descargadas (omitidas):</strong>
+                        <ul class="mb-0">
+                            {% for file in skipped %}
+                            <li>{{ file }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Downloads Table -->
-        <div class="table-container">
-            <h5 class="mb-4"><i class="bi bi-music-note-list"></i> Músicas Descargadas</h5>
-            <div class="table-responsive">
-                <table id="musicas-table" class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nombre del archivo</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if musicas %}
-                            {% for musica in musicas %}
+        <!-- Genres and Songs -->
+        <h5 class="mb-4" style="color: white; text-align: center;"><i class="bi bi-folder-fill"></i> Colección por Género</h5>
+        
+        {% if genres_data %}
+            {% for genre, songs in genres_data.items() %}
+            <div class="genre-section">
+                <div class="genre-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-music-note-list"></i> {{ genre }} 
+                        <span class="badge bg-light text-dark">{{ songs|length }} canciones</span>
+                    </h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover genre-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre del archivo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for song in songs %}
                             <tr>
                                 <td>{{ loop.index }}</td>
-                                <td><i class="bi bi-file-earmark-music"></i> {{ musica }}</td>
+                                <td><i class="bi bi-file-earmark-music"></i> {{ song }}</td>
                                 <td>
-                                    <a href="{{ url_for('download_file', filename=musica) }}" class="btn btn-primary btn-sm" download>
+                                    <a href="{{ url_for('download_file', genre=genre, filename=song) }}" class="btn btn-primary btn-sm" download>
                                         <i class="bi bi-download"></i> Descargar
                                     </a>
-                                    <form action="{{ url_for('delete_file', filename=musica) }}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este archivo?')">
+                                    <form action="{{ url_for('delete_file', genre=genre, filename=song) }}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar?')">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
                                     </form>
                                 </td>
                             </tr>
                             {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td></td>
-                                <td class="text-center">No hay músicas descargadas.</td>
-                                <td></td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="genre-section text-center">
+                <p class="text-muted">No hay canciones descargadas aún.</p>
+            </div>
+        {% endif %}
+
+        <!-- Modal de progreso -->
+        <div class="modal fade" id="progressModal" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5><i class="bi bi-download"></i> Descargando...</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 id="progressBar" style="width: 0%">0%</div>
+                        </div>
+                        <p id="progressInfo">Iniciando descarga...</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+
+        <!-- Modal de éxito -->
+        <div class="modal fade" id="successModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5><i class="bi bi-check-circle"></i> ¡Descarga completada!</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="bi bi-music-note-beamed" style="font-size: 3rem; color: #10b981;"></i>
+                        <h6 id="downloadedFileName" class="mt-3"></h6>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="window.location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Descargar otra
+                        </button>
+                        <button class="btn btn-info" onclick="window.location.href='#downloads'">
+                            <i class="bi bi-folder"></i> Ver descargas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sidebar Toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-            sidebar.classList.toggle('hide');
-            mainContent.classList.toggle('full');
-        });
-
-        // DataTable
+        // DataTable para cada género
         $(document).ready(function () {
-            $("#musicas-table").DataTable({
+            $(".genre-table").DataTable({
                 pageLength: 10,
                 lengthChange: false,
                 language: {
@@ -440,20 +273,108 @@
             });
         });
 
-        // Paste Button
-        document.getElementById('pasteBtn').addEventListener('click', async function() {
-            try {
-                const permission = await navigator.permissions.query({ name: "clipboard-read" });
-                if (permission.state === "denied") {
-                    alert("Permiso denegado para acceder al portapapeles.");
+        function toggleGenreInput() {
+            const select = document.getElementById('genreSelect');
+            const newGenreDiv = document.getElementById('newGenreDiv');
+            const newGenreInput = document.getElementById('newGenreInput');
+            const genreHidden = document.getElementById('genreHidden');
+            
+            if (select.value === 'nuevo') {
+                newGenreDiv.style.display = 'block';
+                newGenreInput.required = true;
+                genreHidden.value = '';
+            } else {
+                newGenreDiv.style.display = 'none';
+                newGenreInput.required = false;
+                genreHidden.value = select.value || 'General';
+            }
+        }
+
+        // Interceptar el envío del formulario
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevenir envío normal
+            
+            const select = document.getElementById('genreSelect');
+            const newGenreInput = document.getElementById('newGenreInput');
+            const genreHidden = document.getElementById('genreHidden');
+            const urlsText = document.querySelector('textarea[name="urls"]').value;
+            
+            // Validar género
+            if (select.value === 'nuevo') {
+                if (newGenreInput.value.trim() === '') {
+                    alert('Por favor, ingresa el nombre del nuevo género');
                     return;
                 }
-                document.getElementById('urlInput').focus();
-                const text = await navigator.clipboard.readText();
-                document.getElementById('urlInput').value = text;
-            } catch (err) {
-                alert('No se pudo acceder al portapapeles.');
+                genreHidden.value = newGenreInput.value.trim();
+            } else if (select.value === '') {
+                alert('Por favor, selecciona un género');
+                return;
+            } else {
+                genreHidden.value = select.value;
             }
+            
+            // Contar URLs
+            const urls = urlsText.split('\n').filter(url => url.trim() !== '');
+            if (urls.length === 0) {
+                alert('Por favor, ingresa al menos una URL');
+                return;
+            }
+            
+            // Mostrar modal de progreso
+            const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+            progressModal.show();
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressInfo = document.getElementById('progressInfo');
+            
+            let currentSong = 0;
+            const totalSongs = urls.length;
+            
+            // Simular progreso (actualizar cada segundo)
+            const progressInterval = setInterval(() => {
+                currentSong++;
+                const percentage = Math.min((currentSong / totalSongs) * 100, 95);
+                progressBar.style.width = percentage + '%';
+                progressBar.textContent = Math.round(percentage) + '%';
+                progressInfo.textContent = `Descargando canción ${currentSong} de ${totalSongs}...`;
+                
+                if (currentSong >= totalSongs) {
+                    clearInterval(progressInterval);
+                    progressInfo.textContent = 'Finalizando descargas...';
+                }
+            }, 2000);
+            
+            // Enviar formulario por AJAX
+            const formData = new FormData(this);
+            
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                clearInterval(progressInterval);
+                
+                // Completar progreso
+                progressBar.style.width = '100%';
+                progressBar.textContent = '100%';
+                progressInfo.textContent = '¡Descarga completada!';
+                
+                setTimeout(() => {
+                    progressModal.hide();
+                    
+                    // Mostrar modal de éxito
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    document.getElementById('downloadedFileName').textContent = 
+                        `${totalSongs} canción${totalSongs > 1 ? 'es' : ''} descargada${totalSongs > 1 ? 's' : ''} en "${genreHidden.value}"`;
+                    successModal.show();
+                }, 1000);
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                progressModal.hide();
+                alert('Ocurrió un error durante la descarga: ' + error);
+            });
         });
     </script>
 </body>
