@@ -3,276 +3,965 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Downloader - Descarga por Lotes</title>
+    <title>MusicStream - Tu Música, Tu Forma</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
+            --primary: #1DB954;
+            --primary-dark: #1aa34a;
+            --dark-bg: #121212;
+            --dark-card: #181818;
+            --dark-hover: #282828;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent: #8b5cf6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 30px 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
         }
-        
-        .container {
-            max-width: 1200px;
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: calc(100vh - 90px);
+            background: var(--dark-bg);
+            padding: 24px 12px;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
         }
-        
-        .header-section {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px 24px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        
-        .header-section h1 {
-            color: var(--primary-color);
+
+        .logo i {
+            font-size: 32px;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 24px;
             font-weight: 700;
-            margin: 0;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
         }
-        
-        .card-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 20px;
-            border: none;
-            border-radius: 15px 15px 0 0 !important;
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--dark-hover);
+            color: var(--text-primary);
         }
-        
-        .genre-section {
-            background: white;
-            border-radius: 15px;
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            margin-bottom: 90px;
+            padding: 24px;
+            min-height: calc(100vh - 90px);
+        }
+
+        /* Header */
+        .content-header {
+            margin-bottom: 32px;
+        }
+
+        .content-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .content-header p {
+            color: var(--text-secondary);
+        }
+
+        /* Cards */
+        .music-card {
+            background: var(--dark-card);
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
         }
-        
+
+        .music-card:hover {
+            background: var(--dark-hover);
+            transform: translateY(-4px);
+        }
+
+        /* Genre Section */
+        .genre-section {
+            margin-bottom: 40px;
+        }
+
         .genre-header {
-            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .genre-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .genre-badge {
+            background: var(--primary);
             color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
         }
-        
-        textarea.form-control {
-            min-height: 200px;
-            font-family: monospace;
-            border-radius: 10px;
+
+        /* Song List */
+        .song-list {
+            background: var(--dark-card);
+            border-radius: 12px;
+            overflow: hidden;
         }
-        
-        .btn {
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .song-item:hover {
+            background: var(--dark-hover);
+        }
+
+        .song-item:last-child {
+            border-bottom: none;
+        }
+
+        .song-number {
+            width: 40px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .song-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .song-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             border-radius: 8px;
-            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
-        
-        .table {
-            margin: 0;
+
+        .song-details h4 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .song-details p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .song-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-action:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn-action.liked {
+            color: var(--primary);
+        }
+
+        .btn-play {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        /* Player */
+        .player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            background: var(--dark-card);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 16px 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .player-song-info {
+            width: 300px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-album-art {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .player-details h4 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .player-details p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .player-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-buttons {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .player-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .player-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .player-btn.play-pause {
+            width: 40px;
+            height: 40px;
+            background: var(--text-primary);
+            color: var(--dark-bg);
+        }
+
+        .player-btn.play-pause:hover {
+            transform: scale(1.1);
+        }
+
+        .player-progress {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 40px;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .player-volume {
+            width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-bar {
+            height: 100%;
+            background: var(--text-primary);
+            border-radius: 2px;
+            width: 70%;
+        }
+
+        /* Download Section */
+        .download-section {
+            background: var(--dark-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .download-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: var(--dark-hover);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .form-select {
+            background: var(--dark-hover);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-select option {
+            background: var(--dark-card);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            padding: 12px 32px;
+            border-radius: 24px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal-content {
+            background: var(--dark-card);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--dark-hover);
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .player-song-info {
+                width: 200px;
+            }
+
+            .player-volume {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header-section">
-            <h1><i class="bi bi-music-note-beamed"></i> Music Downloader</h1>
-            <p class="text-muted mb-0">Descarga música de YouTube organizadas por género</p>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="bi bi-music-note-beamed"></i>
+            <h1>MusicStream</h1>
+        </div>
+        
+        <a href="#" class="nav-item active" data-section="library">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Inicio</span>
+        </a>
+        
+        <a href="#" class="nav-item" data-section="likes">
+            <i class="bi bi-heart-fill"></i>
+            <span>Me Gusta</span>
+        </a>
+        
+        <a href="#" class="nav-item" data-section="playlists">
+            <i class="bi bi-music-note-list"></i>
+            <span>Playlists</span>
+        </a>
+        
+        <a href="#" class="nav-item" data-section="download">
+            <i class="bi bi-cloud-download-fill"></i>
+            <span>Descargar</span>
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Library Section -->
+        <div id="library-section">
+            <div class="content-header">
+                <h2>Tu Biblioteca</h2>
+                <p>Toda tu música en un solo lugar</p>
+            </div>
+
+            {% if genres_data %}
+                {% for genre, songs in genres_data.items() %}
+                <div class="genre-section">
+                    <div class="genre-header">
+                        <h3 class="genre-title">
+                            <i class="bi bi-vinyl-fill"></i> {{ genre }}
+                        </h3>
+                        <span class="genre-badge">{{ songs|length }} canciones</span>
+                    </div>
+
+                    <div class="song-list">
+                        {% for song in songs %}
+                        <div class="song-item" data-genre="{{ genre }}" data-filename="{{ song }}">
+                            <div class="song-number">{{ loop.index }}</div>
+                            <div class="song-info">
+                                <div class="song-icon">
+                                    <i class="bi bi-music-note"></i>
+                                </div>
+                                <div class="song-details">
+                                    <h4>{{ song.replace('.mp3', '') }}</h4>
+                                    <p>{{ genre }}</p>
+                                </div>
+                            </div>
+                            <div class="song-actions">
+                                <button class="btn-action btn-play" onclick="playSong('{{ genre }}', '{{ song }}')">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                                <button class="btn-action btn-like" onclick="toggleLike('{{ genre }}', '{{ song }}')">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                                <button class="btn-action" onclick="addToPlaylist('{{ genre }}', '{{ song }}')">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                                <a href="{{ url_for('download_file', genre=genre, filename=song) }}" class="btn-action" download>
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                <form action="{{ url_for('delete_file', genre=genre, filename=song) }}" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar esta canción?')">
+                                    <button type="submit" class="btn-action">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="music-card text-center" style="padding: 60px 20px;">
+                    <i class="bi bi-music-note-beamed" style="font-size: 64px; color: var(--text-secondary);"></i>
+                    <h3 style="margin-top: 20px; color: var(--text-secondary);">No hay música aún</h3>
+                    <p style="color: var(--text-secondary);">Descarga algunas canciones para empezar</p>
+                </div>
+            {% endif %}
         </div>
 
-        <!-- Download Form -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-cloud-download"></i> Descargar múltiples canciones</h5>
+        <!-- Likes Section -->
+        <div id="likes-section" style="display: none;">
+            <div class="content-header">
+                <h2>Canciones que te gustan</h2>
+                <p>Tus favoritas de todos los tiempos</p>
             </div>
-            <div class="card-body" style="padding: 25px; background: white;">
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">URLs de YouTube (una por línea)</label>
-                        <textarea name="urls" class="form-control" placeholder="https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=..." required></textarea>
+            <div id="likes-container" class="song-list"></div>
+        </div>
+
+        <!-- Playlists Section -->
+        <div id="playlists-section" style="display: none;">
+            <div class="content-header">
+                <h2>Tus Playlists</h2>
+                <p>Crea y organiza tus listas de reproducción</p>
+            </div>
+            <button class="btn btn-primary mb-4" onclick="createPlaylist()">
+                <i class="bi bi-plus-circle"></i> Nueva Playlist
+            </button>
+            <div id="playlists-container"></div>
+        </div>
+
+        <!-- Download Section -->
+        <div id="download-section" style="display: none;">
+            <div class="content-header">
+                <h2>Descargar Música</h2>
+                <p>Descarga canciones de YouTube en lotes</p>
+            </div>
+
+            <div class="download-section">
+                <form method="post" id="downloadForm">
+                    <h3><i class="bi bi-cloud-download"></i> URLs de YouTube</h3>
+                    <textarea name="urls" placeholder="Pega las URLs de YouTube aquí (una por línea)&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=..." required></textarea>
+                    
+                    <h3 style="margin-top: 24px;">Género Musical</h3>
+                    <select id="genreSelect" class="form-select" onchange="toggleGenreInput()">
+                        <option value="">-- Selecciona un género --</option>
+                        {% for genre in genres_data.keys() %}
+                        <option value="{{ genre }}">{{ genre }}</option>
+                        {% endfor %}
+                        <option value="nuevo">➕ Crear nuevo género</option>
+                    </select>
+
+                    <div id="newGenreDiv" style="display: none; margin-bottom: 16px;">
+                        <input type="text" id="newGenreInput" class="form-select" placeholder="Nombre del nuevo género (ej: Rock, Pop, Reggaeton)">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Género Musical</label>
-                        <div class="input-group">
-                            <select id="genreSelect" class="form-select" onchange="toggleGenreInput()">
-                                <option value="">-- Selecciona un género existente --</option>
-                                {% for genre in genres_data.keys() %}
-                                <option value="{{ genre }}">{{ genre }} ({{ genres_data[genre]|length }} canciones)</option>
-                                {% endfor %}
-                                <option value="nuevo">➕ Crear nuevo género</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3" id="newGenreDiv" style="display: none;">
-                        <label class="form-label">Nombre del nuevo género</label>
-                        <input type="text" id="newGenreInput" class="form-control" placeholder="Ej: Rock, Pop, Reggaeton, etc.">
-                    </div>
+
                     <input type="hidden" name="genre" id="genreHidden" value="General">
-                    <button type="submit" class="btn btn-success w-100">
+                    
+                    <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-download"></i> Descargar Todo
                     </button>
                 </form>
-                
+
                 {% if message %}
-                <div class="alert alert-info mt-3" style="border-radius: 12px; padding: 15px 20px;">
+                <div class="alert alert-info mt-4" style="background: rgba(29,185,84,0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 16px;">
                     <i class="bi bi-info-circle"></i> {{ message }}
-                    
-                    {% if downloaded %}
-                    <div class="mt-2">
-                        <strong>Nuevas descargas:</strong>
-                        <ul class="mb-0">
-                            {% for file in downloaded %}
-                            <li>{{ file }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-                    
-                    {% if skipped %}
-                    <div class="mt-2">
-                        <strong>Ya descargadas (omitidas):</strong>
-                        <ul class="mb-0">
-                            {% for file in skipped %}
-                            <li>{{ file }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
                 </div>
                 {% endif %}
             </div>
         </div>
+    </div>
 
-        <!-- Genres and Songs -->
-        <h5 class="mb-4" style="color: white; text-align: center;"><i class="bi bi-folder-fill"></i> Colección por Género</h5>
-        
-        {% if genres_data %}
-            {% for genre, songs in genres_data.items() %}
-            <div class="genre-section">
-                <div class="genre-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-music-note-list"></i> {{ genre }} 
-                        <span class="badge bg-light text-dark">{{ songs|length }} canciones</span>
-                    </h6>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover genre-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nombre del archivo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for song in songs %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td><i class="bi bi-file-earmark-music"></i> {{ song }}</td>
-                                <td>
-                                    <a href="{{ url_for('download_file', genre=genre, filename=song) }}" class="btn btn-primary btn-sm" download>
-                                        <i class="bi bi-download"></i> Descargar
-                                    </a>
-                                    <form action="{{ url_for('delete_file', genre=genre, filename=song) }}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar?')">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+    <!-- Player -->
+    <div class="player">
+        <div class="player-song-info">
+            <div class="player-album-art">
+                <i class="bi bi-music-note"></i>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="genre-section text-center">
-                <p class="text-muted">No hay canciones descargadas aún.</p>
-            </div>
-        {% endif %}
-
-        <!-- Modal de progreso -->
-        <div class="modal fade" id="progressModal" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5><i class="bi bi-download"></i> Descargando...</h5>
-                    </div>
-                    <div class="modal-body">
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 id="progressBar" style="width: 0%">0%</div>
-                        </div>
-                        <p id="progressInfo">Iniciando descarga...</p>
-                    </div>
-                </div>
+            <div class="player-details">
+                <h4 id="playerSongName">Selecciona una canción</h4>
+                <p id="playerGenre">-</p>
             </div>
         </div>
 
-        <!-- Modal de éxito -->
-        <div class="modal fade" id="successModal">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5><i class="bi bi-check-circle"></i> ¡Descarga completada!</h5>
-                    </div>
-                    <div class="modal-body text-center">
-                        <i class="bi bi-music-note-beamed" style="font-size: 3rem; color: #10b981;"></i>
-                        <h6 id="downloadedFileName" class="mt-3"></h6>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary" onclick="window.location.reload()">
-                            <i class="bi bi-arrow-clockwise"></i> Descargar otra
-                        </button>
-                        <button class="btn btn-info" onclick="window.location.href='#downloads'">
-                            <i class="bi bi-folder"></i> Ver descargas
-                        </button>
-                    </div>
+        <div class="player-controls">
+            <div class="player-buttons">
+                <button class="player-btn" onclick="previousSong()">
+                    <i class="bi bi-skip-start-fill"></i>
+                </button>
+                <button class="player-btn play-pause" onclick="togglePlay()">
+                    <i class="bi bi-play-fill" id="playPauseIcon"></i>
+                </button>
+                <button class="player-btn" onclick="nextSong()">
+                    <i class="bi bi-skip-end-fill"></i>
+                </button>
+            </div>
+            <div class="player-progress">
+                <span class="progress-time" id="currentTime">0:00</span>
+                <div class="progress-bar-container" onclick="seekTo(event)">
+                    <div class="progress-bar" id="progressBar"></div>
                 </div>
+                <span class="progress-time" id="totalTime">0:00</span>
+            </div>
+        </div>
+
+        <div class="player-volume">
+            <i class="bi bi-volume-up-fill"></i>
+            <div class="volume-slider" onclick="setVolume(event)">
+                <div class="volume-bar" id="volumeBar"></div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Audio Element -->
+    <audio id="audioPlayer"></audio>
+
+    <!-- Modal for Playlist -->
+    <div class="modal fade" id="playlistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar a Playlist</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="playlistModalBody"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // DataTable para cada género
-        $(document).ready(function () {
-            $(".genre-table").DataTable({
-                pageLength: 10,
-                lengthChange: false,
-                language: {
-                    search: "Buscar:",
-                    paginate: {
-                        next: "Siguiente",
-                        previous: "Anterior"
-                    },
-                    info: "Mostrando _START_ a _END_ de _TOTAL_ canciones",
-                    infoEmpty: "No hay canciones para mostrar",
-                    zeroRecords: "No se encontraron resultados"
-                }
+        // Variables globales
+        const audioPlayer = document.getElementById('audioPlayer');
+        let currentSong = null;
+        let playlist = [];
+        let currentIndex = 0;
+        let likes = [];
+        let playlists = {};
+
+        // Navegación
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = item.dataset.section;
+                
+                // Update active state
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Show section
+                document.querySelectorAll('[id$="-section"]').forEach(s => s.style.display = 'none');
+                document.getElementById(section + '-section').style.display = 'block';
+                
+                // Load section data
+                if (section === 'likes') loadLikes();
+                if (section === 'playlists') loadPlaylists();
             });
         });
 
+        // Funciones de reproducción
+        function playSong(genre, filename) {
+            currentSong = { genre, filename };
+            const songName = filename.replace('.mp3', '');
+            
+            audioPlayer.src = `/stream/${genre}/${encodeURIComponent(filename)}`;
+            audioPlayer.play();
+            
+            document.getElementById('playerSongName').textContent = songName;
+            document.getElementById('playerGenre').textContent = genre;
+            document.getElementById('playPauseIcon').className = 'bi bi-pause-fill';
+            
+            // Update play buttons
+            document.querySelectorAll('.btn-play').forEach(btn => {
+                btn.querySelector('i').className = 'bi bi-play-fill';
+            });
+            
+            const currentBtn = document.querySelector(`[data-genre="${genre}"][data-filename="${filename}"] .btn-play`);
+            if (currentBtn) {
+                currentBtn.querySelector('i').className = 'bi bi-pause-fill';
+            }
+        }
+
+        function togglePlay() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                document.getElementById('playPauseIcon').className = 'bi bi-pause-fill';
+            } else {
+                audioPlayer.pause();
+                document.getElementById('playPauseIcon').className = 'bi bi-play-fill';
+            }
+        }
+
+        function previousSong() {
+            // TODO: Implement previous song logic
+        }
+
+        function nextSong() {
+            // TODO: Implement next song logic
+        }
+
+        function seekTo(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = audioPlayer.duration * percent;
+        }
+
+        function setVolume(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            audioPlayer.volume = percent;
+            document.getElementById('volumeBar').style.width = (percent * 100) + '%';
+        }
+
+        // Update progress
+        audioPlayer.addEventListener('timeupdate', () => {
+            const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('currentTime').textContent = formatTime(audioPlayer.currentTime);
+            document.getElementById('totalTime').textContent = formatTime(audioPlayer.duration);
+        });
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Likes functionality
+        async function toggleLike(genre, filename) {
+            const btn = document.querySelector(`[data-genre="${genre}"][data-filename="${filename}"] .btn-like`);
+            const isLiked = btn.classList.contains('liked');
+            
+            const method = isLiked ? 'DELETE' : 'POST';
+            const response = await fetch('/api/likes', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ genre, filename })
+            });
+            
+            if (response.ok) {
+                btn.classList.toggle('liked');
+                btn.querySelector('i').className = isLiked ? 'bi bi-heart' : 'bi bi-heart-fill';
+                loadLikes();
+            }
+        }
+
+        async function loadLikes() {
+            const response = await fetch('/api/likes');
+            likes = await response.json();
+            
+            const container = document.getElementById('likes-container');
+            if (likes.length === 0) {
+                container.innerHTML = '<div class="text-center p-5"><i class="bi bi-heart" style="font-size: 64px; color: var(--text-secondary);"></i><h3 style="margin-top: 20px; color: var(--text-secondary);">No tienes favoritos aún</h3></div>';
+                return;
+            }
+            
+            container.innerHTML = likes.map((song, index) => `
+                <div class="song-item">
+                    <div class="song-number">${index + 1}</div>
+                    <div class="song-info">
+                        <div class="song-icon"><i class="bi bi-music-note"></i></div>
+                        <div class="song-details">
+                            <h4>${song.filename.replace('.mp3', '')}</h4>
+                            <p>${song.genre}</p>
+                        </div>
+                    </div>
+                    <div class="song-actions">
+                        <button class="btn-action btn-play" onclick="playSong('${song.genre}', '${song.filename}')">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                        <button class="btn-action btn-like liked" onclick="toggleLike('${song.genre}', '${song.filename}')">
+                            <i class="bi bi-heart-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Update like buttons in main library
+            likes.forEach(song => {
+                const btn = document.querySelector(`[data-genre="${song.genre}"][data-filename="${song.filename}"] .btn-like`);
+                if (btn) {
+                    btn.classList.add('liked');
+                    btn.querySelector('i').className = 'bi bi-heart-fill';
+                }
+            });
+        }
+
+        // Playlists functionality
+        async function loadPlaylists() {
+            const response = await fetch('/api/playlists');
+            playlists = await response.json();
+            
+            const container = document.getElementById('playlists-container');
+            const playlistNames = Object.keys(playlists);
+            
+            if (playlistNames.length === 0) {
+                container.innerHTML = '<div class="text-center p-5"><i class="bi bi-music-note-list" style="font-size: 64px; color: var(--text-secondary);"></i><h3 style="margin-top: 20px; color: var(--text-secondary);">No tienes playlists aún</h3></div>';
+                return;
+            }
+            
+            container.innerHTML = playlistNames.map(name => `
+                <div class="genre-section">
+                    <div class="genre-header">
+                        <h3 class="genre-title"><i class="bi bi-music-note-list"></i> ${name}</h3>
+                        <span class="genre-badge">${playlists[name].length} canciones</span>
+                    </div>
+                    <div class="song-list">
+                        ${playlists[name].map((song, index) => `
+                            <div class="song-item">
+                                <div class="song-number">${index + 1}</div>
+                                <div class="song-info">
+                                    <div class="song-icon"><i class="bi bi-music-note"></i></div>
+                                    <div class="song-details">
+                                        <h4>${song.filename.replace('.mp3', '')}</h4>
+                                        <p>${song.genre}</p>
+                                    </div>
+                                </div>
+                                <div class="song-actions">
+                                    <button class="btn-action btn-play" onclick="playSong('${song.genre}', '${song.filename}')">
+                                        <i class="bi bi-play-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function createPlaylist() {
+            const name = prompt('Nombre de la playlist:');
+            if (!name) return;
+            
+            const response = await fetch('/api/playlists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            
+            if (response.ok) {
+                loadPlaylists();
+            }
+        }
+
+        async function addToPlaylist(genre, filename) {
+            const response = await fetch('/api/playlists');
+            playlists = await response.json();
+            
+            const playlistNames = Object.keys(playlists);
+            if (playlistNames.length === 0) {
+                alert('Primero crea una playlist');
+                return;
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
+            const modalBody = document.getElementById('playlistModalBody');
+            
+            modalBody.innerHTML = playlistNames.map(name => `
+                <button class="btn btn-outline-primary w-100 mb-2" onclick="addSongToPlaylist('${name}', '${genre}', '${filename}')">
+                    ${name} (${playlists[name].length} canciones)
+                </button>
+            `).join('');
+            
+            modal.show();
+        }
+
+        async function addSongToPlaylist(playlist, genre, filename) {
+            const response = await fetch(`/api/playlists/${playlist}/songs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ genre, filename })
+            });
+            
+            if (response.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('playlistModal')).hide();
+                alert('Canción agregada a la playlist');
+            }
+        }
+
+        // Genre selection
         function toggleGenreInput() {
             const select = document.getElementById('genreSelect');
             const newGenreDiv = document.getElementById('newGenreDiv');
@@ -290,92 +979,23 @@
             }
         }
 
-        // Interceptar el envío del formulario
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevenir envío normal
-            
+        document.getElementById('downloadForm').addEventListener('submit', function(e) {
             const select = document.getElementById('genreSelect');
             const newGenreInput = document.getElementById('newGenreInput');
             const genreHidden = document.getElementById('genreHidden');
-            const urlsText = document.querySelector('textarea[name="urls"]').value;
             
-            // Validar género
             if (select.value === 'nuevo') {
-                if (newGenreInput.value.trim() === '') {
+                if (!newGenreInput.value.trim()) {
+                    e.preventDefault();
                     alert('Por favor, ingresa el nombre del nuevo género');
                     return;
                 }
                 genreHidden.value = newGenreInput.value.trim();
-            } else if (select.value === '') {
-                alert('Por favor, selecciona un género');
-                return;
-            } else {
-                genreHidden.value = select.value;
             }
-            
-            // Contar URLs
-            const urls = urlsText.split('\n').filter(url => url.trim() !== '');
-            if (urls.length === 0) {
-                alert('Por favor, ingresa al menos una URL');
-                return;
-            }
-            
-            // Mostrar modal de progreso
-            const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
-            progressModal.show();
-            
-            const progressBar = document.getElementById('progressBar');
-            const progressInfo = document.getElementById('progressInfo');
-            
-            let currentSong = 0;
-            const totalSongs = urls.length;
-            
-            // Simular progreso (actualizar cada segundo)
-            const progressInterval = setInterval(() => {
-                currentSong++;
-                const percentage = Math.min((currentSong / totalSongs) * 100, 95);
-                progressBar.style.width = percentage + '%';
-                progressBar.textContent = Math.round(percentage) + '%';
-                progressInfo.textContent = `Descargando canción ${currentSong} de ${totalSongs}...`;
-                
-                if (currentSong >= totalSongs) {
-                    clearInterval(progressInterval);
-                    progressInfo.textContent = 'Finalizando descargas...';
-                }
-            }, 2000);
-            
-            // Enviar formulario por AJAX
-            const formData = new FormData(this);
-            
-            fetch('/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(html => {
-                clearInterval(progressInterval);
-                
-                // Completar progreso
-                progressBar.style.width = '100%';
-                progressBar.textContent = '100%';
-                progressInfo.textContent = '¡Descarga completada!';
-                
-                setTimeout(() => {
-                    progressModal.hide();
-                    
-                    // Mostrar modal de éxito
-                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                    document.getElementById('downloadedFileName').textContent = 
-                        `${totalSongs} canción${totalSongs > 1 ? 'es' : ''} descargada${totalSongs > 1 ? 's' : ''} en "${genreHidden.value}"`;
-                    successModal.show();
-                }, 1000);
-            })
-            .catch(error => {
-                clearInterval(progressInterval);
-                progressModal.hide();
-                alert('Ocurrió un error durante la descarga: ' + error);
-            });
         });
+
+        // Initialize
+        loadLikes();
     </script>
 </body>
 </html>
