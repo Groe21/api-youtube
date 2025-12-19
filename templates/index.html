@@ -1207,8 +1207,9 @@
             }
         }
 
-        let pendingDownloadUrl = '';
-        let pendingDownloadBtn = null;
+        // Variables globales para descarga
+        var pendingDownloadUrl = '';
+        var pendingDownloadBtn = null;
 
         function downloadFromSearch(url) {
             const videoId = url.split('v=')[1]?.split('&')[0];
@@ -1221,21 +1222,6 @@
             const modal = new bootstrap.Modal(document.getElementById('genreModal'));
             modal.show();
         }
-
-        // Manejar cambio de select en modal
-        document.addEventListener('DOMContentLoaded', () => {
-            const select = document.getElementById('genreSelectModal');
-            if (select) {
-                select.addEventListener('change', () => {
-                    const newGenreDiv = document.getElementById('newGenreModalDiv');
-                    if (select.value === 'nuevo') {
-                        newGenreDiv.style.display = 'block';
-                    } else {
-                        newGenreDiv.style.display = 'none';
-                    }
-                });
-            }
-        });
 
         async function confirmDownload() {
             const select = document.getElementById('genreSelectModal');
@@ -1306,6 +1292,19 @@
 
         // Initialize
         loadLikes();
+        
+        // Manejar cambio de select en modal de género
+        const genreSelectModal = document.getElementById('genreSelectModal');
+        if (genreSelectModal) {
+            genreSelectModal.addEventListener('change', () => {
+                const newGenreDiv = document.getElementById('newGenreModalDiv');
+                if (genreSelectModal.value === 'nuevo') {
+                    newGenreDiv.style.display = 'block';
+                } else {
+                    newGenreDiv.style.display = 'none';
+                }
+            });
+        }
     </script>
 </body>
 </html>
