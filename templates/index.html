@@ -1317,23 +1317,27 @@
         loadLikes();
         
         // Manejar cambio de select en modal de género
-        const genreSelectModal = document.getElementById('genreSelectModal');
-        if (genreSelectModal) {
-            genreSelectModal.addEventListener('change', () => {
-                const newGenreDiv = document.getElementById('newGenreModalDiv');
-                const newGenreInput = document.getElementById('newGenreModalInput');
-                
-                if (genreSelectModal.value === 'nuevo') {
-                    newGenreDiv.style.display = 'block';
-                    newGenreDiv.style.animation = 'slideDown 0.3s ease';
-                    // Focus en el input después de la animación
-                    setTimeout(() => newGenreInput.focus(), 300);
-                } else {
-                    newGenreDiv.style.display = 'none';
-                    newGenreInput.value = ''; // Limpiar el campo
-                }
-            });
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const genreSelectModal = document.getElementById('genreSelectModal');
+            if (genreSelectModal) {
+                genreSelectModal.addEventListener('change', () => {
+                    const newGenreDiv = document.getElementById('newGenreModalDiv');
+                    const newGenreInput = document.getElementById('newGenreModalInput');
+                    
+                    if (genreSelectModal.value === 'nuevo') {
+                        newGenreDiv.style.display = 'block';
+                        newGenreDiv.style.animation = 'slideDown 0.3s ease';
+                        // Focus en el input después de la animación
+                        setTimeout(() => {
+                            if (newGenreInput) newGenreInput.focus();
+                        }, 300);
+                    } else {
+                        newGenreDiv.style.display = 'none';
+                        if (newGenreInput) newGenreInput.value = ''; // Limpiar el campo
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
