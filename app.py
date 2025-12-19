@@ -199,28 +199,41 @@ def search_youtube():
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
-            'extract_flat': True,
-            'default_search': 'ytsearch10'
+            'extract_flat': 'in_playlist',
+            'skip_download': True,
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(f"ytsearch10:{query}", download=False)
             
             videos = []
-            if 'entries' in result:
+            if result and 'entries' in result:
                 for entry in result['entries']:
-                    if entry:
+                    if entry and entry.get('id'):
                         # Formatear duración
                         duration = entry.get('duration', 0)
-                        minutes = duration // 60
-                        seconds = duration % 60
-                        duration_str = f"{minutes}:{seconds:02d}"
+                        if duration:
+                            minutes = int(duration) // 60
+                            seconds = int(duration) % 60
+                            duration_str = f"{minutes}:{seconds:02d}"
+                        else:
+                            duration_str = "N/A"
+                        
+                        # Obtener mejor thumbnail
+                        thumbnails = entry.get('thumbnails', [])
+                        thumbnail_url = ''
+                        if thumbnails:
+                            thumbnail_url = thumbnails[-1].get('url', '')
+                        elif entry.get('thumbnail'):
+                            thumbnail_url = entry.get('thumbnail')
+                        else:
+                            thumbnail_url = f"https://img.youtube.com/vi/{entry.get('id')}/mqdefault.jpg"
                         
                         videos.append({
                             'id': entry.get('id', ''),
                             'title': entry.get('title', 'Sin título'),
-                            'channel': entry.get('uploader', 'Desconocido'),
-                            'thumbnail': entry.get('thumbnail', ''),
+                            'channel': entry.get('uploader', entry.get('channel', 'Desconocido')),
+                            'thumbnail': thumbnail_url,
                             'duration': duration_str,
                             'url': f"https://www.youtube.com/watch?v={entry.get('id', '')}"
                         })
@@ -228,6 +241,7 @@ def search_youtube():
             return jsonify({'success': True, 'results': videos})
             
     except Exception as e:
+        print(f"Error en búsqueda: {str(e)}")  # Para debugging
         return jsonify({'error': str(e)}), 500
 
 # Download from search
