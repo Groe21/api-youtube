@@ -835,8 +835,8 @@
     <div class="modal fade" id="genreModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Seleccionar Género</h5>
+                <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h5 class="modal-title" style="visibility: hidden;">.</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -848,7 +848,7 @@
                         {% endfor %}
                         <option value="nuevo">✨ Crear nuevo género</option>
                     </select>
-                    <div id="newGenreModalDiv" style="display: none; margin-top: 16px;">
+                    <div id="newGenreModalDiv" style="display: none; margin-top: 16px; overflow: visible;">
                         <label for="newGenreModalInput" class="form-label" style="color: var(--text-primary); font-weight: 500; margin-bottom: 8px; display: block;">Nombre del nuevo género</label>
                         <input type="text" id="newGenreModalInput" class="form-control" placeholder="Ej: Rock, Pop, Reggaeton, Salsa..." style="background: var(--dark-hover); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); padding: 10px 12px;">
                         <small style="color: var(--text-secondary); display: block; margin-top: 6px;">
