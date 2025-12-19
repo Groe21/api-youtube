@@ -73,8 +73,25 @@ def index():
 
 @app.route('/downloads/<genre>/<filename>')
 def download_file(genre, filename):
+    """Descargar archivo de música con headers correctos"""
     genre_path = os.path.join(BATCH_DOWNLOADS_PATH, genre)
-    return send_from_directory(genre_path, filename, as_attachment=True)
+    
+    # Asegurar que el archivo sea MP3
+    if not filename.endswith('.mp3'):
+        filename = filename.replace('.webm', '.mp3').replace('.m4a', '.mp3')
+    
+    response = send_from_directory(
+        genre_path, 
+        filename, 
+        as_attachment=True,
+        mimetype='audio/mpeg'
+    )
+    
+    # Agregar headers para asegurar descarga correcta
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response.headers['Content-Type'] = 'audio/mpeg'
+    
+    return response
 
 @app.route('/api/delete/<genre>/<filename>', methods=['DELETE'])
 def delete_file(genre, filename):
@@ -292,6 +309,11 @@ def download_from_search():
         genre_folder = os.path.join(BATCH_DOWNLOADS_PATH, genre)
         os.makedirs(genre_folder, exist_ok=True)
         
+        print(f"=== INICIO DESCARGA ===")
+        print(f"Género: {genre}")
+        print(f"Carpeta destino: {genre_folder}")
+        print(f"URL: {url}")
+        
         # Opciones para yt-dlp con FFmpeg
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -306,16 +328,30 @@ def download_from_search():
             'keepvideo': False,
             'writethumbnail': False,
             'overwrites': True,
-            'ffmpeg_location': '/usr/bin/ffmpeg',  # Ubicación de FFmpeg
+            'ffmpeg_location': '/usr/bin/ffmpeg',
+            'postprocessor_args': [
+                '-ar', '44100',  # Sample rate
+            ],
+            'prefer_ffmpeg': True,
         }
         
-        print(f"Descargando en: {genre_folder}")
-        print(f"URL: {url}")
+        print(f"Opciones yt-dlp: {ydl_opts}")
         
         # Descargar
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            print(f"Descarga completada: {info.get('title', 'Unknown')}")
+            title = info.get('title', 'Unknown')
+            print(f"Título: {title}")
+            
+            # Verificar archivos creados
+            files_in_folder = os.listdir(genre_folder)
+            print(f"Archivos en carpeta: {files_in_folder}")
+            
+            # Buscar el archivo MP3
+            mp3_files = [f for f in files_in_folder if f.endswith('.mp3')]
+            print(f"Archivos MP3 encontrados: {mp3_files}")
+        
+        print(f"=== DESCARGA COMPLETADA ===")
         
         # Invalidar cache
         genres_cache['timestamp'] = 0
@@ -323,7 +359,10 @@ def download_from_search():
         return jsonify({'success': True, 'message': 'Download completed'})
         
     except Exception as e:
-        print(f"Error en descarga: {str(e)}")
+        print(f"=== ERROR EN DESCARGA ===")
+        print(f"Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # Webhook para auto-deployment
