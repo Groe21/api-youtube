@@ -457,6 +457,130 @@
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
+        /* Search Results */
+        .search-box {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 50px 16px 20px;
+            background: var(--dark-card);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--dark-card);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .search-result-item:hover {
+            background: var(--dark-hover);
+        }
+
+        .search-thumbnail {
+            width: 120px;
+            height: 68px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .search-info {
+            flex: 1;
+        }
+
+        .search-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .search-channel {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .search-duration {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .download-btn {
+            background: var(--primary);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .download-btn:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 12px;
@@ -518,6 +642,11 @@
         <a href="#" class="nav-item" data-section="playlists">
             <i class="bi bi-music-note-list"></i>
             <span>Playlists</span>
+        </a>
+        
+        <a href="#" class="nav-item" data-section="search">
+            <i class="bi bi-search"></i>
+            <span>Buscar YouTube</span>
         </a>
         
         <a href="#" class="nav-item" data-section="download">
@@ -610,6 +739,23 @@
                 <i class="bi bi-plus-circle"></i> Nueva Playlist
             </button>
             <div id="playlists-container"></div>
+        </div>
+
+        <!-- Search Section -->
+        <div id="search-section" style="display: none;">
+            <div class="content-header">
+                <h2>Buscar en YouTube</h2>
+                <p>Busca y descarga música directamente desde YouTube</p>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Busca canciones, artistas o álbumes..." onkeypress="if(event.key==='Enter') searchYouTube()">
+                <button class="search-btn" onclick="searchYouTube()">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+
+            <div id="searchResults"></div>
         </div>
 
         <!-- Download Section -->
@@ -1033,6 +1179,97 @@
                 genreHidden.value = newGenreInput.value.trim();
             }
         });
+
+        // Search YouTube functionality
+        async function searchYouTube() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '<div class="text-center p-5"><div class="loading-spinner mx-auto"></div><p style="margin-top: 16px; color: var(--text-secondary);">Buscando...</p></div>';
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    resultsContainer.innerHTML = data.results.map(video => `
+                        <div class="search-result-item">
+                            <img src="${video.thumbnail}" alt="${video.title}" class="search-thumbnail">
+                            <div class="search-info">
+                                <div class="search-title">${video.title}</div>
+                                <div class="search-channel">${video.channel}</div>
+                                <div class="search-duration">${video.duration}</div>
+                            </div>
+                            <button class="download-btn" onclick="downloadFromSearch('${video.url.replace(/'/g, "\\'")}')"
+                                    id="btn-${video.id}">
+                                <i class="bi bi-download"></i>
+                                Descargar
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    resultsContainer.innerHTML = '<div class="text-center p-5"><i class="bi bi-search" style="font-size: 64px; color: var(--text-secondary);"></i><h3 style="margin-top: 20px; color: var(--text-secondary);">No se encontraron resultados</h3></div>';
+                }
+            } catch (error) {
+                resultsContainer.innerHTML = '<div class="text-center p-5"><i class="bi bi-exclamation-triangle" style="font-size: 64px; color: #f44336;"></i><h3 style="margin-top: 20px; color: #f44336;">Error al buscar</h3></div>';
+                console.error('Error:', error);
+            }
+        }
+
+        async function downloadFromSearch(url) {
+            const videoId = url.split('v=')[1]?.split('&')[0];
+            const btnId = 'btn-' + videoId;
+            const btn = document.getElementById(btnId);
+            
+            if (!btn) return;
+            
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div> Descargando...';
+
+            try {
+                const response = await fetch('/api/download-from-search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    btn.innerHTML = '<i class="bi bi-check-circle"></i> ¡Descargado!';
+                    btn.style.background = '#4caf50';
+                    
+                    // Refresh library after 1 second
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    btn.innerHTML = '<i class="bi bi-x-circle"></i> Error';
+                    btn.style.background = '#f44336';
+                    setTimeout(() => {
+                        btn.innerHTML = originalContent;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                btn.innerHTML = '<i class="bi bi-x-circle"></i> Error';
+                btn.style.background = '#f44336';
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 3000);
+            }
+        }
 
         // Initialize
         loadLikes();

@@ -4,6 +4,7 @@ import json
 import subprocess
 import hmac
 import hashlib
+import yt_dlp
 from utils.batch_downloader import download_multiple_songs, get_genres_and_songs
 import time
 
@@ -183,6 +184,91 @@ def manage_likes():
             likes.remove(song)
             save_likes(likes)
         return jsonify({'success': True, 'likes': likes})
+
+# YouTube Search API
+@app.route('/api/search', methods=['POST'])
+def search_youtube():
+    """Buscar videos en YouTube"""
+    data = request.get_json()
+    query = data.get('query', '')
+    
+    if not query:
+        return jsonify({'error': 'Query is required'}), 400
+    
+    try:
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': True,
+            'default_search': 'ytsearch10'
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            result = ydl.extract_info(f"ytsearch10:{query}", download=False)
+            
+            videos = []
+            if 'entries' in result:
+                for entry in result['entries']:
+                    if entry:
+                        # Formatear duración
+                        duration = entry.get('duration', 0)
+                        minutes = duration // 60
+                        seconds = duration % 60
+                        duration_str = f"{minutes}:{seconds:02d}"
+                        
+                        videos.append({
+                            'id': entry.get('id', ''),
+                            'title': entry.get('title', 'Sin título'),
+                            'channel': entry.get('uploader', 'Desconocido'),
+                            'thumbnail': entry.get('thumbnail', ''),
+                            'duration': duration_str,
+                            'url': f"https://www.youtube.com/watch?v={entry.get('id', '')}"
+                        })
+            
+            return jsonify({'success': True, 'results': videos})
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Download from search
+@app.route('/api/download-from-search', methods=['POST'])
+def download_from_search():
+    """Descargar video desde búsqueda de YouTube"""
+    data = request.get_json()
+    url = data.get('url', '')
+    
+    if not url:
+        return jsonify({'error': 'URL is required'}), 400
+    
+    try:
+        # Opciones para yt-dlp
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+            'outtmpl': os.path.join(BATCH_DOWNLOADS_PATH, 'YouTube', '%(title)s.%(ext)s'),
+            'quiet': True,
+            'no_warnings': True,
+        }
+        
+        # Crear carpeta si no existe
+        youtube_folder = os.path.join(BATCH_DOWNLOADS_PATH, 'YouTube')
+        os.makedirs(youtube_folder, exist_ok=True)
+        
+        # Descargar
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        
+        # Invalidar cache
+        genres_cache['timestamp'] = 0
+        
+        return jsonify({'success': True, 'message': 'Download completed'})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Webhook para auto-deployment
 @app.route('/webhook/deploy', methods=['POST'])
