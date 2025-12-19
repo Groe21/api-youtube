@@ -581,6 +581,25 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 200px;
+            }
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(29, 185, 84, 0.25) !important;
+            outline: none;
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 12px;
@@ -821,16 +840,20 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <label for="genreSelectModal" class="form-label" style="color: var(--text-primary);">¿En qué género guardar esta canción?</label>
-                    <select id="genreSelectModal" class="form-select" style="margin-bottom: 16px;">
+                    <label for="genreSelectModal" class="form-label" style="color: var(--text-primary); font-weight: 500; margin-bottom: 12px; display: block;">¿En qué género guardar esta canción?</label>
+                    <select id="genreSelectModal" class="form-select" style="background: var(--dark-hover); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); padding: 10px 12px;">
                         <option value="">-- Selecciona un género --</option>
                         {% for genre in genres_data.keys() %}
                         <option value="{{ genre }}">{{ genre }}</option>
                         {% endfor %}
-                        <option value="nuevo">➕ Crear nuevo género</option>
+                        <option value="nuevo">✨ Crear nuevo género</option>
                     </select>
-                    <div id="newGenreModalDiv" style="display: none;">
-                        <input type="text" id="newGenreModalInput" class="form-select" placeholder="Nombre del nuevo género (ej: Rock, Pop, Reggaeton)">
+                    <div id="newGenreModalDiv" style="display: none; margin-top: 16px;">
+                        <label for="newGenreModalInput" class="form-label" style="color: var(--text-primary); font-weight: 500; margin-bottom: 8px; display: block;">Nombre del nuevo género</label>
+                        <input type="text" id="newGenreModalInput" class="form-control" placeholder="Ej: Rock, Pop, Reggaeton, Salsa..." style="background: var(--dark-hover); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); padding: 10px 12px;">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 6px;">
+                            <i class="bi bi-info-circle"></i> El género se creará automáticamente al descargar
+                        </small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1298,10 +1321,16 @@
         if (genreSelectModal) {
             genreSelectModal.addEventListener('change', () => {
                 const newGenreDiv = document.getElementById('newGenreModalDiv');
+                const newGenreInput = document.getElementById('newGenreModalInput');
+                
                 if (genreSelectModal.value === 'nuevo') {
                     newGenreDiv.style.display = 'block';
+                    newGenreDiv.style.animation = 'slideDown 0.3s ease';
+                    // Focus en el input después de la animación
+                    setTimeout(() => newGenreInput.focus(), 300);
                 } else {
                     newGenreDiv.style.display = 'none';
+                    newGenreInput.value = ''; // Limpiar el campo
                 }
             });
         }
