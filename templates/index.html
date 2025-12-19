@@ -648,11 +648,6 @@
             <i class="bi bi-search"></i>
             <span>Buscar YouTube</span>
         </a>
-        
-        <a href="#" class="nav-item" data-section="download">
-            <i class="bi bi-cloud-download-fill"></i>
-            <span>Descargar</span>
-        </a>
     </div>
 
     <!-- Main Content -->
@@ -758,45 +753,6 @@
             <div id="searchResults"></div>
         </div>
 
-        <!-- Download Section -->
-        <div id="download-section" style="display: none;">
-            <div class="content-header">
-                <h2>Descargar Música</h2>
-                <p>Descarga canciones de YouTube en lotes</p>
-            </div>
-
-            <div class="download-section">
-                <form method="post" id="downloadForm">
-                    <h3><i class="bi bi-cloud-download"></i> URLs de YouTube</h3>
-                    <textarea name="urls" placeholder="Pega las URLs de YouTube aquí (una por línea)&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=..." required></textarea>
-                    
-                    <h3 style="margin-top: 24px;">Género Musical</h3>
-                    <select id="genreSelect" class="form-select" onchange="toggleGenreInput()">
-                        <option value="">-- Selecciona un género --</option>
-                        {% for genre in genres_data.keys() %}
-                        <option value="{{ genre }}">{{ genre }}</option>
-                        {% endfor %}
-                        <option value="nuevo">➕ Crear nuevo género</option>
-                    </select>
-
-                    <div id="newGenreDiv" style="display: none; margin-bottom: 16px;">
-                        <input type="text" id="newGenreInput" class="form-select" placeholder="Nombre del nuevo género (ej: Rock, Pop, Reggaeton)">
-                    </div>
-
-                    <input type="hidden" name="genre" id="genreHidden" value="General">
-                    
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-download"></i> Descargar Todo
-                    </button>
-                </form>
-
-                {% if message %}
-                <div class="alert alert-info mt-4" style="background: rgba(29,185,84,0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 16px;">
-                    <i class="bi bi-info-circle"></i> {{ message }}
-                </div>
-                {% endif %}
-            </div>
-        </div>
     </div>
 
     <!-- Player -->
@@ -852,6 +808,35 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="playlistModalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Genre Selection -->
+    <div class="modal fade" id="genreModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccionar Género</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="genreSelectModal" class="form-label" style="color: var(--text-primary);">¿En qué género guardar esta canción?</label>
+                    <select id="genreSelectModal" class="form-select" style="margin-bottom: 16px;">
+                        <option value="">-- Selecciona un género --</option>
+                        {% for genre in genres_data.keys() %}
+                        <option value="{{ genre }}">{{ genre }}</option>
+                        {% endfor %}
+                        <option value="nuevo">➕ Crear nuevo género</option>
+                    </select>
+                    <div id="newGenreModalDiv" style="display: none;">
+                        <input type="text" id="newGenreModalInput" class="form-select" placeholder="Nombre del nuevo género (ej: Rock, Pop, Reggaeton)">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: var(--dark-hover); border: none;">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmDownload()">Descargar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1222,11 +1207,56 @@
             }
         }
 
-        async function downloadFromSearch(url) {
+        let pendingDownloadUrl = '';
+        let pendingDownloadBtn = null;
+
+        function downloadFromSearch(url) {
             const videoId = url.split('v=')[1]?.split('&')[0];
             const btnId = 'btn-' + videoId;
-            const btn = document.getElementById(btnId);
             
+            pendingDownloadUrl = url;
+            pendingDownloadBtn = document.getElementById(btnId);
+            
+            // Mostrar modal
+            const modal = new bootstrap.Modal(document.getElementById('genreModal'));
+            modal.show();
+        }
+
+        // Manejar cambio de select en modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('genreSelectModal');
+            if (select) {
+                select.addEventListener('change', () => {
+                    const newGenreDiv = document.getElementById('newGenreModalDiv');
+                    if (select.value === 'nuevo') {
+                        newGenreDiv.style.display = 'block';
+                    } else {
+                        newGenreDiv.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        async function confirmDownload() {
+            const select = document.getElementById('genreSelectModal');
+            const newGenreInput = document.getElementById('newGenreModalInput');
+            let genre = select.value;
+            
+            if (genre === 'nuevo') {
+                genre = newGenreInput.value.trim();
+                if (!genre) {
+                    alert('Por favor, ingresa el nombre del género');
+                    return;
+                }
+            } else if (!genre) {
+                alert('Por favor, selecciona un género');
+                return;
+            }
+            
+            // Cerrar modal
+            bootstrap.Modal.getInstance(document.getElementById('genreModal')).hide();
+            
+            const btn = pendingDownloadBtn;
             if (!btn) return;
             
             const originalContent = btn.innerHTML;
@@ -1237,7 +1267,10 @@
                 const response = await fetch('/api/download-from-search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url })
+                    body: JSON.stringify({ 
+                        url: pendingDownloadUrl,
+                        genre: genre
+                    })
                 });
 
                 const data = await response.json();

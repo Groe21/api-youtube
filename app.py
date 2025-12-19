@@ -250,11 +250,16 @@ def download_from_search():
     """Descargar video desde búsqueda de YouTube"""
     data = request.get_json()
     url = data.get('url', '')
+    genre = data.get('genre', 'General')
     
     if not url:
         return jsonify({'error': 'URL is required'}), 400
     
     try:
+        # Crear carpeta del género si no existe
+        genre_folder = os.path.join(BATCH_DOWNLOADS_PATH, genre)
+        os.makedirs(genre_folder, exist_ok=True)
+        
         # Opciones para yt-dlp
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -263,14 +268,10 @@ def download_from_search():
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'outtmpl': os.path.join(BATCH_DOWNLOADS_PATH, 'YouTube', '%(title)s.%(ext)s'),
+            'outtmpl': os.path.join(genre_folder, '%(title)s.%(ext)s'),
             'quiet': True,
             'no_warnings': True,
         }
-        
-        # Crear carpeta si no existe
-        youtube_folder = os.path.join(BATCH_DOWNLOADS_PATH, 'YouTube')
-        os.makedirs(youtube_folder, exist_ok=True)
         
         # Descargar
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
