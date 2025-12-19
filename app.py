@@ -76,12 +76,44 @@ def download_file(genre, filename):
     genre_path = os.path.join(BATCH_DOWNLOADS_PATH, genre)
     return send_from_directory(genre_path, filename, as_attachment=True)
 
-@app.route('/delete/<genre>/<filename>', methods=['POST'])
+@app.route('/api/delete/<genre>/<filename>', methods=['DELETE'])
 def delete_file(genre, filename):
-    file_path = os.path.join(BATCH_DOWNLOADS_PATH, genre, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    return redirect(url_for('index'))
+    """Eliminar archivo de música"""
+    try:
+        file_path = os.path.join(BATCH_DOWNLOADS_PATH, genre, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            # Invalidar cache
+            genres_cache['timestamp'] = 0
+            return jsonify({'success': True, 'message': 'Archivo eliminado'})
+        else:
+            return jsonify({'success': False, 'error': 'Archivo no encontrado'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/genre/<genre>', methods=['DELETE'])
+def delete_genre(genre):
+    """Eliminar género completo (solo si está vacío)"""
+    try:
+        genre_path = os.path.join(BATCH_DOWNLOADS_PATH, genre)
+        
+        if not os.path.exists(genre_path):
+            return jsonify({'success': False, 'error': 'Género no encontrado'}), 404
+        
+        # Verificar que esté vacío
+        files = [f for f in os.listdir(genre_path) if f.endswith('.mp3')]
+        if files:
+            return jsonify({'success': False, 'error': 'El género contiene canciones'}), 400
+        
+        # Eliminar carpeta
+        os.rmdir(genre_path)
+        
+        # Invalidar cache
+        genres_cache['timestamp'] = 0
+        
+        return jsonify({'success': True, 'message': 'Género eliminado'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # API para streaming/reproducción
 @app.route('/stream/<genre>/<filename>')
@@ -260,7 +292,7 @@ def download_from_search():
         genre_folder = os.path.join(BATCH_DOWNLOADS_PATH, genre)
         os.makedirs(genre_folder, exist_ok=True)
         
-        # Opciones para yt-dlp
+        # Opciones para yt-dlp con FFmpeg
         ydl_opts = {
             'format': 'bestaudio/best',
             'postprocessors': [{
@@ -269,13 +301,21 @@ def download_from_search():
                 'preferredquality': '192',
             }],
             'outtmpl': os.path.join(genre_folder, '%(title)s.%(ext)s'),
-            'quiet': True,
-            'no_warnings': True,
+            'quiet': False,
+            'no_warnings': False,
+            'keepvideo': False,
+            'writethumbnail': False,
+            'overwrites': True,
+            'ffmpeg_location': '/usr/bin/ffmpeg',  # Ubicación de FFmpeg
         }
+        
+        print(f"Descargando en: {genre_folder}")
+        print(f"URL: {url}")
         
         # Descargar
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            info = ydl.extract_info(url, download=True)
+            print(f"Descarga completada: {info.get('title', 'Unknown')}")
         
         # Invalidar cache
         genres_cache['timestamp'] = 0
@@ -283,6 +323,7 @@ def download_from_search():
         return jsonify({'success': True, 'message': 'Download completed'})
         
     except Exception as e:
+        print(f"Error en descarga: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # Webhook para auto-deployment
