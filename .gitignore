@@ -52,9 +52,11 @@ logs/
 *.old
 *.bak
 
-# User data (opcional - descomentar si no quieres subir las canciones)
-# batch_downloads/
-# downloads/
-# spotify_downloads/
-# playlists.json
-# likes.json
+# User data - Carpetas de descargas (no subir al repositorio)
+batch_downloads/
+downloads/
+spotify_downloads/
+
+# Archivos de datos opcionales
+playlists.json
+likes.json

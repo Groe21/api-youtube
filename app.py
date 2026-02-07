@@ -137,7 +137,22 @@ def delete_genre(genre):
 def stream_file(genre, filename):
     """Endpoint para streaming de audio"""
     genre_path = os.path.join(BATCH_DOWNLOADS_PATH, genre)
-    return send_from_directory(genre_path, filename)
+    
+    # Asegurar que el archivo sea MP3
+    if not filename.endswith('.mp3'):
+        filename = filename.replace('.webm', '.mp3').replace('.m4a', '.mp3')
+    
+    response = send_from_directory(
+        genre_path, 
+        filename,
+        mimetype='audio/mpeg'
+    )
+    
+    # Agregar headers para asegurar que se descargue/reproduzca correctamente
+    response.headers['Content-Type'] = 'audio/mpeg'
+    response.headers['Accept-Ranges'] = 'bytes'
+    
+    return response
 
 # API para playlists
 def load_playlists():
